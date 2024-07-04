@@ -1,0 +1,123 @@
+---
+title: "Partido Missão - Contagem"
+format: 
+  dashboard:
+    logo: https://partidomissao.com/images/onca.svg
+    nav-buttons: [linkedin, twitter, github]
+    github: https://github.com/diegomscoelho/missao_dash
+    orientation: columns
+    theme: [theme/custom.scss]
+---
+
+```{r}
+#| label: load-packages
+#| message: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+
+df <- read.csv("data/mbl.csv", header = T)
+colnames(df) <- c("abbrev_state", "votos", "DATE")
+
+states <- sf::st_read("data/BR.shp", quiet = T)
+colnames(states)[2] <- "abbrev_state"
+colnames(states)[5] <- "name_region"
+
+tse <- read.table("table.tsv", header = T)
+colnames(tse)[1] = "abbrev_state"
+tse$VV <- as.numeric(gsub("[.]", "", tse$VV))
+tse$EV <- as.numeric(gsub("[.]", "", tse$EV))
+tse <- tse %>% mutate(VV05 = VV * 0.005, EV01 = EV * 0.001)
+
+states_join = list(df, tse, states)
+states_join <- left_join(states, df, by = "abbrev_state")
+states_join <- left_join(states_join, tse, by = "abbrev_state")
+
+tab <- states_join %>% as.data.frame() %>% select(name_region, abbrev_state, votos, EV01) %>%
+  mutate(EV01 = round(EV01, 0)) %>%
+  rbind(., list("Total","Total", sum(.$votos), round(sum(states_join$VV05),0)))
+
+my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
+
+```
+
+## Column {width="75%"}
+
+### Row {height="50%"}
+
+```{r}
+
+fig1 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
+  scale_fill_gradient2(na.value="white", low="#272727", mid = "grey", high="#FCBD27", midpoint = 1) +
+  labs(subtitle="           Apoiamentos por estado / Eleitorado que votou", size=8, fill = "Apoiamentos\nNormalizados") +
+  theme_void()
+
+fig1
+
+```
+
+```{r}
+
+fig2 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
+  scale_fill_gradient2(mid="#272727", high="#FCBD27") +
+  labs(subtitle="           Apoiamentos por estado", size=8, fill = "Apoiamentos\n(log10)") +
+  theme_void()
+
+fig2
+
+```
+
+### Row {height="50%"}
+
+```{r}
+
+fig3 <- ggplot() +
+  geom_sf(data=states_join, aes(fill= ifelse(votos > EV01, "Sim", "Não")), color= "#272727", size=.15) +
+  scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos") +
+  theme_void()
+
+fig3
+
+```
+
+```{r}
+fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>% filter(prop != 0) %>%
+  arrange(desc(abbrev_state)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%
+  ggplot(aes(x = "", y = prop, fill = abbrev_state)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  scale_fill_manual(values = my_palette(11)) +
+  coord_polar("y", start = 0) +
+  ggrepel::geom_label_repel(aes(y = lab.ypos, label = paste0(abbrev_state,"\n",prop, "%")), color = "white", nudge_x = 0.7) +
+  theme_void() + labs(title = "   Participação por estado no total") +
+  theme(legend.position="none")
+
+fig5
+
+
+```
+
+## Column {width="25%"}
+
+```{r}
+#| message: false
+#| fig.width: 2
+#| fig.height: 10
+
+fig4 <- tab %>% filter(abbrev_state != "Total") %>%
+  mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 100, round(votos /EV01 * 100, 1))) %>%
+  ggplot(aes(x = reorder(abbrev_state, perc), y = perc, fill = ifelse(perc >= 100, "Sim", "Não"))) +
+  scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
+  geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  theme_classic() + coord_flip(ylim = c(0, 110)) +
+  labs(fill = "Aptos", y = "", x = "", title = "Apoiamentos mínimos por estado (%)") +
+  geom_text(aes(label=paste0(perc, "%")),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
+  theme(title = element_text(size = 8), legend.position = c(.85, .5))
+
+print(fig4)
+
+```
