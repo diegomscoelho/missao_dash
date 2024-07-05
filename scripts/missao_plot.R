@@ -4,7 +4,6 @@ Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
 # GEOBR #
 #########
 
-library(geobr)
 library(ggplot2)
 library(sf)
 library(dplyr)
