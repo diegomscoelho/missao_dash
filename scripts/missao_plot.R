@@ -87,7 +87,7 @@ fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/su
   geom_bar(width = 1, stat = "identity", color = "white") +
   scale_fill_manual(values = my_palette(11)) +
   coord_polar("y", start = 0) +
-  ggrepel::geom_label_repel(aes(y = lab.ypos,
+  ggrepel::geom_label_repel (aes(y = lab.ypos,
                             label = label),
                             color = "white", nudge_x = 0.7) +
   theme_void() + labs(title = "   Participação por estado no total") +
