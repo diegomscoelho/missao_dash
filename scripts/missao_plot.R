@@ -1,8 +1,5 @@
 Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
 
-df <- read.csv("data/mbl.csv", header = T)
-colnames(df) <- c("abbrev_state", "votos", "DATE")
-
 #########
 # GEOBR #
 #########
@@ -25,6 +22,15 @@ colnames(tse)[1] = "abbrev_state"
 tse$VV <- as.numeric(gsub("[.]", "", tse$VV))
 tse$EV <- as.numeric(gsub("[.]", "", tse$EV))
 tse <- tse %>% mutate(VV05 = VV * 0.005, EV01 = EV * 0.001)
+
+##############
+# APOIAMENTO #
+##############
+
+df <- read.csv("data/mbl.csv", header = T)
+colnames(df) <- c("abbrev_state", "votos", "DATE")
+df <- df %>% filter(Sys.Date() == as.Date(DATE))
+
 
 #############
 # JOIN DATA #
@@ -87,6 +93,6 @@ fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/su
   theme_void() + labs(title = "   Participação por estado no total") +
   theme(legend.position="none")
 
-png(filename = paste0("mbl_",Sys.Date(),".png"), res = 250, width = 4000, height = 2000)
+png(filename = paste0("fig/mbl_",Sys.Date(),".png"), res = 250, width = 4000, height = 2000)
 cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = c(1,1,1,0.85)), fig4, rel_widths = c(1,0.3))
 dev.off()
