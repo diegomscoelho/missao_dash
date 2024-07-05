@@ -3,14 +3,13 @@ params:
   last_date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
 title: "Partido Missão - Contagem - Ultima atualização ({{< meta params.last_date >}})"
 date: today
-format: 
-  dashboard:
-    logo: https://partidomissao.com/images/onca.svg
-    nav-buttons: [linkedin, twitter, github]
-    github: https://github.com/diegomscoelho/missao_dash
-    theme: [theme/custom.scss]
-    orientation: columns
-    include-after-body: "theme/footer.html"
+dashboard:
+  logo: https://partidomissao.com/images/onca.svg
+  nav-buttons: [linkedin, twitter, github]
+  github: https://github.com/diegomscoelho/missao_dash
+  theme: [theme/custom.scss]
+  orientation: columns
+  include-after-body: "theme/footer.html"
 ---
 
 ```{r}

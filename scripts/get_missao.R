@@ -7,6 +7,7 @@ old_data <- read.csv("./data/mbl.csv", header = T)
 # POST
 library(httr)
 library(dplyr)
+library(stringr)
 
 url <- GET("https://sapf.tse.jus.br/sapf-consulta/paginas/principal")
 ck <- cookies(url)
@@ -15,7 +16,7 @@ ck <- cookies(url)
 pattern <- 'name="javax.faces.ViewState" id="[^"]+" value="([^"]+)"'
 
 # Extract the value
-matches <- stringr::str_match(content(url, "text"), pattern)
+matches <- str_match(content(url, "text"), pattern)
 
 # The extracted value is in the second element of the matches
 view_state_value <- matches[2]
@@ -147,7 +148,7 @@ response <- content(response, "text")
 pattern <- "Total de aptos:\\s*(\\d+)"
 
 # Find all matches
-matches <- stringr::str_match_all(response, pattern)
+matches <- str_match_all(response, pattern)
 
 # Extract the numbers
 numbers <- unlist(lapply(matches, function(x) x[,2]))
