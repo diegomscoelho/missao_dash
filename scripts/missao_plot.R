@@ -1,0 +1,92 @@
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+
+df <- read.csv("data/mbl.csv", header = T)
+colnames(df) <- c("abbrev_state", "votos", "DATE")
+
+#########
+# GEOBR #
+#########
+
+library(geobr)
+library(ggplot2)
+library(sf)
+library(dplyr)
+
+states <- sf::st_read("data/BR.shp")
+colnames(states)[2] <- "abbrev_state"
+colnames(states)[5] <- "name_region"
+
+#######
+# TSE #
+#######
+
+tse <- read.table("data/tse.tsv", header = T)
+colnames(tse)[1] = "abbrev_state"
+tse$VV <- as.numeric(gsub("[.]", "", tse$VV))
+tse$EV <- as.numeric(gsub("[.]", "", tse$EV))
+tse <- tse %>% mutate(VV05 = VV * 0.005, EV01 = EV * 0.001)
+
+#############
+# JOIN DATA #
+#############
+
+states_join = list(df, tse, states)
+states_join <- left_join(states, df, by = "abbrev_state")
+states_join <- left_join(states_join, tse, by = "abbrev_state")
+
+tab <- states_join %>% as.data.frame() %>% select(name_region, abbrev_state, votos, EV01) %>%
+  mutate(EV01 = round(EV01, 0)) %>%
+  rbind(., list("Total","Total", sum(.$votos), round(sum(states_join$VV05),0)))
+
+###########
+# FIGURES #
+###########
+
+fig1 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
+  scale_fill_gradient2(na.value="white", low="#272727", mid = "grey", high="#FCBD27", midpoint = 1) +
+  labs(subtitle="           Apoiamentos por estado / Eleitorado que votou", size=8, fill = "Apoiamentos\nNormalizados") +
+  theme_void()
+
+fig2 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
+  scale_fill_gradient2(mid="#272727", high="#FCBD27") +
+  labs(subtitle="           Apoiamentos por estado", size=8, fill = "Apoiamentos\n(log10)") +
+  theme_void()
+
+fig3 <- ggplot() +
+  geom_sf(data=states_join, aes(fill= ifelse(votos > EV01, "Sim", "Não")), color= "#272727", size=.15) +
+  scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos") +
+  theme_void()
+
+fig4 <- tab %>% filter(abbrev_state != "Total") %>%
+  mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 100, round(votos /EV01 * 100, 1))) %>%
+  mutate(label = paste0(perc, "%")) %>%
+  ggplot(aes(x = reorder(paste0("(",votos,") ",abbrev_state), votos/ EV01), y = perc, fill = ifelse(perc >= 100, "Sim", "Não"))) +
+  scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
+  geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  theme_classic() + coord_flip(ylim = c(0, 110)) +
+  labs(fill = "Aptos", x = "(Votos totais) Sigla do estado", y = "Porcentagem (votos para meta)", title = "Apoiamentos mínimos por estado (%)") +
+  geom_text(aes(label= ifelse(votos >= EV01, label, paste0(label, " (",EV01-votos,")"))),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
+  theme(title = element_text(size = 8), axis.title = element_text(size = 10), legend.position = c(.85, .5))
+
+my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
+
+fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>% filter(prop != 0) %>%
+  arrange(desc(abbrev_state)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%
+  mutate(label = paste0(abbrev_state,"\n",prop, "%")) %>%
+  ggplot(aes(x = "", y = prop, fill = abbrev_state)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  scale_fill_manual(values = my_palette(11)) +
+  coord_polar("y", start = 0) +
+  ggrepel::geom_label_repel(aes(y = lab.ypos,
+                            label = label),
+                            color = "white", nudge_x = 0.7) +
+  theme_void() + labs(title = "   Participação por estado no total") +
+  theme(legend.position="none")
+
+png(filename = paste0("mbl_",Sys.Date(),".png"), res = 250, width = 4000, height = 2000)
+cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = c(1,1,1,0.85)), fig4, rel_widths = c(1,0.3))
+dev.off()
