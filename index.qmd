@@ -23,6 +23,7 @@ library(dplyr)
 
 df <- read.csv("data/mbl.csv", header = T)
 colnames(df) <- c("abbrev_state", "votos", "DATE")
+df <- df %>% filter(Sys.Date() == as.Date(DATE))
 
 apo_n <- sum(df$votos)
 
