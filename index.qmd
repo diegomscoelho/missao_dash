@@ -1,5 +1,8 @@
 ---
-title: "Partido Missão - Contagem"
+params:
+  last_date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+title: "Partido Missão - Contagem - Ultima atualização ({{< meta params.last_date >}})"
+date: today
 format: 
   dashboard:
     logo: https://partidomissao.com/images/onca.svg
