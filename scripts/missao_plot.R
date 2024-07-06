@@ -74,11 +74,13 @@ fig4 <- tab %>% filter(abbrev_state != "Total") %>%
   theme_classic() + coord_flip(ylim = c(0, 110)) +
   labs(fill = "Aptos", x = "(Votos totais) Sigla do estado", y = "Porcentagem (votos para meta)", title = "Apoiamentos mínimos por estado (%)") +
   geom_text(aes(label= ifelse(votos >= EV01, label, paste0(label, " (",EV01-votos,")"))),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
-  theme(title = element_text(size = 8), axis.title = element_text(size = 10), legend.position = c(.85, .5))
+  theme(title = element_text(size = 8),axis.title = element_text(size = 10),
+        legend.position = "inside", legend.position.inside = c(.85, .5))
 
 my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
 
-fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>% filter(prop != 0) %>%
+fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>%
+  filter(prop != 0) %>%
   arrange(desc(abbrev_state)) %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%
   mutate(label = paste0(abbrev_state,"\n",prop, "%")) %>%
@@ -86,7 +88,7 @@ fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/su
   geom_bar(width = 1, stat = "identity", color = "white") +
   scale_fill_manual(values = my_palette(11)) +
   coord_polar("y", start = 0) +
-  ggrepel::geom_label_repel (aes(y = lab.ypos,
+  ggrepel::geom_label_repel (aes(y = lab.ypos, segment.size = 0,
                             label = label),
                             color = "white", nudge_x = 0.7) +
   theme_void() + labs(title = "   Participação por estado no total") +
