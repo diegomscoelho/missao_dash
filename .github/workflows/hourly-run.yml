@@ -37,7 +37,8 @@ jobs:
     - name: Make a commit
       run: |
         echo "This is a commit made at date and time: ${{ env.datetime }}" > current_datetime.txt
-        git add current_datetime.txt
+        git pull
+        git add .
         git commit -m "Autocommit on ${{ env.datetime }}"
 
     - name: Push changes
