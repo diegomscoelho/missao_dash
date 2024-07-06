@@ -15,5 +15,31 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Run update test
-      run: echo "This runs every hour"
-        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript /workspace/scripts/get_missao.R
+      run: echo "This runs every hour in working days from 10-20h"
+        # Generate new input hourly
+        echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> teste.txt
+        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
+        # # Generate plot to figs
+        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
+        # # Generate update to dash
+        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Get Current Date and Time
+      id: current_datetime
+      run: echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+
+    - name: Make a commit
+      run: |
+        echo "This is a commit made at date and time: ${{ env.datetime }}" > current_datetime.txt
+        git add current_datetime.txt
+        git commit -m "Autocommit on ${{ env.datetime }}"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
