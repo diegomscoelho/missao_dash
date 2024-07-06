@@ -7,15 +7,16 @@ on:
     # - cron: '0 20 * * 1-5'    # Runs at 8 PM on weekdays
 
 jobs:
-  run-every-hour:
+  commit-date-time:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Run update test
-      run: echo "This runs every hour in working days from 10-20h"
+      run: |
+        echo "This runs every hour in working days from 10-20h"
         # Generate new input hourly
         echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> teste.txt
         # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
