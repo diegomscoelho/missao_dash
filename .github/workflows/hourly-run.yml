@@ -5,10 +5,15 @@ on:
     - cron: '0 * * * *'
     # - cron: '0 10-19 * * 1-5' # Runs every hour from 10 AM to 7 PM on weekdays
     # - cron: '0 20 * * 1-5'    # Runs at 8 PM on weekdays
+  push:
+    branches:
+      - master
 
 jobs:
   commit-date-time:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'test:') || github.event_name == 'schedule'
+
 
     steps:
     - name: Checkout Repository
@@ -37,7 +42,7 @@ jobs:
     - name: Make a commit
       run: |
         echo "This is a commit made at date and time: ${{ env.datetime }}" > current_datetime.txt
-        git add current_datetime.txt
+        git add .
         git commit -m "Autocommit on ${{ env.datetime }}"
 
     - name: Push changes
