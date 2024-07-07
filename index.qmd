@@ -30,7 +30,7 @@ library(dplyr)
 
 df <- read.csv("data/mbl.csv", header = T)
 colnames(df) <- c("abbrev_state", "votos", "DATE")
-df <- df %>% filter(Sys.Date() == as.Date(DATE))
+df <- df %>% filter(as.Date(DATE) == max(as.Date(DATE)))
 
 apo_n <- sum(df$votos)
 
@@ -54,6 +54,8 @@ tab <- states_join %>% as.data.frame() %>% select(name_region, abbrev_state, vot
   mutate(EV01 = round(EV01, 0)) %>%
   rbind(., list("Total","Total", sum(.$votos), round(sum(states_join$VV05),0)))
 
+leg_size = 10
+
 my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
 
 ```
@@ -69,7 +71,8 @@ my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
 fig1 <- ggplot() +
   geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
   scale_fill_gradient2(na.value="white", low="#272727", mid = "grey", high="#FCBD27", midpoint = 1) +
-  labs(subtitle="           Apoiamentos por estado / Eleitorado que votou", size=8, fill = "Apoiamentos\nNormalizados") +
+  labs(subtitle="           Apoiamentos por estado (A) / Apoiamentos mínimos (AM)",
+       size=leg_size, fill = "A/AM") +
   theme_void()
 
 print(fig1)
@@ -81,7 +84,7 @@ print(fig1)
 fig2 <- ggplot() +
   geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
   scale_fill_gradient2(mid="#272727", high="#FCBD27") +
-  labs(subtitle="           Apoiamentos por estado", size=8, fill = "Apoiamentos\n(log10)") +
+  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos\n(log10)") +
   theme_void()
 
 print(fig2)
@@ -138,10 +141,13 @@ fig4 <- tab %>% filter(abbrev_state != "Total") %>%
   scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
   geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
   theme_classic() + coord_flip(ylim = c(0, 110)) +
-  labs(fill = "Aptos", x = "(Votos totais) Sigla do estado", y = "Porcentagem (votos para meta)", title = "Apoiamentos mínimos por estado (%)") +
+  labs(fill = "Aptos", x = "(Apoiamentos totais) Sigla do estado",
+  y = "Porcentagem (apoiamentos para meta)", title = "Apoiamentos mínimos por estado (%)",
+  caption = "* Porcentagem máxima da figura <= 100%") +
   geom_text(aes(label= ifelse(votos >= EV01, label, paste0(label, " (",EV01-votos,")"))),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
   theme(title = element_text(size = 8),axis.title = element_text(size = 10),
-        legend.position = "inside", legend.position.inside = c(.85, .5))
+        legend.position = "inside", legend.position.inside = c(.85, .5),
+        plot.caption.position = "plot", plot.caption = element_text(hjust = 0.5))
 
 print(fig4)
 
