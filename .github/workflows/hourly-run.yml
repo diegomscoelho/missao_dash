@@ -34,9 +34,12 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Get Current Date and Time
+    - name: Get Current Date and Time in America/Sao_Paulo
       id: current_datetime
-      run: echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+      run: |
+        sudo ln -snf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+        sudo dpkg-reconfigure -f noninteractive tzdata
+        echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
 
     - name: Make a commit
       run: |
