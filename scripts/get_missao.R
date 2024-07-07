@@ -166,5 +166,14 @@ old_data$DATE <- as.Date(old_data$DATE)
 df <- old_data %>% filter(DATE != Sys.Date()) %>% rbind(., df)
 
 
+# Get the current day of the week
+Sys.setenv(TZ='America/Sao_Paulo');
+current_day <- weekdays(Sys.Date())
+
+# Define working days
+working_days <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
 ## Store file
-write.csv(df, file = paste0("./data/mbl.csv"), row.names = F, quote = F)
+if (current_day %in% working_days) {
+  write.csv(df, file = paste0("./data/mbl.csv"), row.names = F, quote = F)
+}
