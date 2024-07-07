@@ -146,13 +146,3 @@ fig4 <- tab %>% filter(abbrev_state != "Total") %>%
 print(fig4)
 
 ```
-
-```{r}
-
-# Get current system date and time
-current_time <- Sys.time()
-
-# Format date and time including day and hour (12-hour format)
-formatted_date <- format(current_time, "%Y-%m-%d %H:%M")  # Example: 2024-07-05 11:04 AM
-
-```
