@@ -34,6 +34,8 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --global pull.rebase true  # Set the default pull strategy to rebase
+
 
     - name: Get Current Date and Time
       id: current_datetime
@@ -41,12 +43,10 @@ jobs:
 
     - name: Pull Latest Changes
       run: |
-        git checkout origin/master
-        git pull origin master
+        git pull origin main
 
     - name: Make a commit
       run: |
-        echo "This is a commit made at date and time: ${{ env.datetime }}" > current_datetime.txt
         git add .
         git commit -m "Autocommit on ${{ env.datetime }}"
 
