@@ -2,7 +2,6 @@ name: Weekly Hourly Run
 
 on:
   schedule:
-    # - cron: '0 * * * *'
     - cron: '0 10-19 * * 1-5' # Runs every hour from 10 AM to 7 PM on weekdays
     - cron: '0 20 * * 1-5'    # Runs at 8 PM on weekdays
   push:
@@ -36,12 +35,11 @@ jobs:
       run: |
         echo "This runs every hour in working days from 10-20h"
         # Generate new input hourly
-        echo "datetime=$(date +'%Y-%m-%d %H:%M')" >> teste.txt
-        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
-        # # Generate plot to figs
-        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
-        # # Generate update to dash
-        # docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
+        # Generate plot to figs
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
+        # Generate update to dash
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
 
     - name: Pull Latest Changes
       run: |
