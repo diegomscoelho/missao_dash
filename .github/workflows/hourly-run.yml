@@ -23,11 +23,11 @@ jobs:
       run: |
         echo "This runs every hour in working days from 10-20h"
         # Generate new input hourly 
-        docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript /workdir/scripts/get_missao.R
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript /workdir/scripts/get_missao.R
         # Generate plot to figs
-        docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
         # Generate update to dash
-        docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
+        docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
 
     - name: Set up Git
       run: |
