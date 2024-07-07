@@ -22,7 +22,7 @@ jobs:
     - name: Run update test
       run: |
         echo "This runs every hour in working days from 10-20h"
-        # Generate new input hourly
+        # Generate new input hourly 
         docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
         # Generate plot to figs
         docker run -w /wordir -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/missao_plot.R
