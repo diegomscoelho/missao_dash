@@ -31,6 +31,10 @@ library(DT)
 
 source("R/formatting.R")
 
+Sys.setenv(TZ='America/Sao_Paulo');
+
+data <- format(Sys.time(), '%d %B, %Y %H:%M')
+
 all <- read.csv("data/mbl.csv", header = T)
 colnames(all) <- c("abbrev_state", "votos", "DATE")
 df <- all %>% filter(as.Date(DATE) == max(as.Date(DATE)))
@@ -267,7 +271,7 @@ fig3 <- ggplot() +
   labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos") +
   theme_void()
 
-msg <- paste0("** Última atualização dos dados: ", as.Date(df[1,3]))
+msg <- paste0("** Última atualização: ", data)
 
 fig4 <- tab %>% filter(abbrev_state != "Total") %>%
   mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 100, round(votos /EV01 * 100, 1))) %>%
