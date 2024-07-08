@@ -27,10 +27,11 @@ format:
 
 library(ggplot2)
 library(dplyr)
+library(DT)
 
-df <- read.csv("data/mbl.csv", header = T)
-colnames(df) <- c("abbrev_state", "votos", "DATE")
-df <- df %>% filter(as.Date(DATE) == max(as.Date(DATE)))
+all <- read.csv("data/mbl.csv", header = T)
+colnames(all) <- c("abbrev_state", "votos", "DATE")
+df <- all %>% filter(as.Date(DATE) == max(as.Date(DATE)))
 
 apo_n <- sum(df$votos)
 
@@ -59,6 +60,8 @@ leg_size = 10
 my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
 
 ```
+
+# Missão
 
 ### Column {width="75%"}
 
@@ -151,4 +154,98 @@ fig4 <- tab %>% filter(abbrev_state != "Total") %>%
 
 print(fig4)
 
+```
+
+# Overview
+
+```{r}
+#| message: false
+#| fig.width: 16
+#| fig.height: 8
+#| padding: 0px
+
+leg_size = 10
+
+fig1 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
+  scale_fill_gradient2(na.value="white", low="#272727", mid = "grey", high="#FCBD27", midpoint = 1) +
+  labs(subtitle="           Apoiamentos por estado (A) / Apoiamentos mínimos (AM)",
+       size=leg_size, fill = "A/AM") +
+  theme_void()
+
+fig2 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
+  scale_fill_gradient2(mid="#272727", high="#FCBD27") +
+  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos\n(log10)") +
+  theme_void()
+
+fig3 <- ggplot() +
+  geom_sf(data=states_join, aes(fill= ifelse(votos > EV01, "Sim", "Não")), color= "#272727", size=.15) +
+  scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos") +
+  theme_void()
+
+msg <- paste0("** Última atualização dos dados: ", as.Date(df[1,3]))
+
+fig4 <- tab %>% filter(abbrev_state != "Total") %>%
+  mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 100, round(votos /EV01 * 100, 1))) %>%
+  mutate(label = paste0(perc, "%")) %>%
+  ggplot(aes(x = reorder(paste0("(",votos,") ",abbrev_state), votos/ EV01), y = perc, fill = ifelse(perc >= 100, "Sim", "Não"))) +
+  scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
+  geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  theme_classic() + coord_flip(ylim = c(0, 110)) +
+  labs(fill = "Aptos", x = "(Apoiamentos totais) Sigla do estado",
+  y = "Porcentagem (apoiamentos para meta)", title = "Apoiamentos mínimos por estado (%)",
+  caption = paste0("* Porcentagem máxima da figura <= 100%\n", msg)) +
+  geom_text(aes(label= ifelse(votos >= EV01, label, paste0(label, " (",EV01-votos,")"))),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
+  theme(title = element_text(size = 8),axis.title = element_text(size = 10),
+        legend.position = "inside", legend.position.inside = c(.85, .5),
+        plot.caption.position = "plot", plot.caption = element_text(hjust = 0.5))
+
+my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
+
+fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>%
+  filter(prop != 0) %>%
+  arrange(desc(abbrev_state)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%
+  mutate(label = paste0(abbrev_state,"\n",prop, "%")) %>%
+  ggplot(aes(x = "", y = prop, fill = abbrev_state)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  scale_fill_manual(values = my_palette(11)) +
+  coord_polar("y", start = 0) +
+  ggrepel::geom_label_repel (aes(y = lab.ypos, segment.size = 0,
+                            label = label),
+                            color = "white", nudge_x = 0.7) +
+  theme_void() + labs(title = "   Participação por estado no total") +
+  theme(legend.position="none")
+
+cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = c(1,1,1,0.85)), fig4, rel_widths = c(1,0.3))
+
+
+```
+
+# Dados
+
+### Column {width="50%"}
+
+```{r}
+all |>
+  arrange(desc(DATE)) |>
+  datatable(
+    colnames = c("Sigla", "Apoiamentos", "Data"),
+    extensions = "Buttons",
+    options = list(dom = 'Bfrtip', paging = TRUE, buttons = c('csv', 'excel'))
+    )
+```
+
+### Column {width="50%"}
+
+```{r}
+tse |>
+  datatable(
+    colnames = c("Sigla", "Votos válidos", "Votos válidos (5%)",
+    "Eleitorado válido", "Eleitorado válido (1%)"),
+    extensions = "Buttons",
+    options = list(dom = 'Bfrtip', paging = TRUE, buttons = c('csv', 'excel'))
+    )
 ```
