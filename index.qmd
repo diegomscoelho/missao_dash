@@ -29,11 +29,18 @@ library(ggplot2)
 library(dplyr)
 library(DT)
 
+source("R/formatting.R")
+
 all <- read.csv("data/mbl.csv", header = T)
 colnames(all) <- c("abbrev_state", "votos", "DATE")
 df <- all %>% filter(as.Date(DATE) == max(as.Date(DATE)))
 
+total <- 547403
 apo_n <- sum(df$votos)
+apo_perc <- round(100 * apo_n / total, 2)
+
+day_inc <- apo_n - all %>% filter(as.Date(DATE) == sort(unique(as.Date(DATE)), decreasing = TRUE)[2]) %>%
+  pull(votos) %>% sum()
 
 states <- sf::st_read("data/BR.shp", quiet = T)
 colnames(states)[2] <- "abbrev_state"
@@ -44,8 +51,6 @@ colnames(tse)[1] = "abbrev_state"
 tse$VV <- as.numeric(gsub("[.]", "", tse$VV))
 tse$EV <- as.numeric(gsub("[.]", "", tse$EV))
 tse <- tse %>% mutate(VV05 = VV * 0.005, EV01 = EV * 0.001)
-
-total <- 547403
 
 states_join = list(df, tse, states)
 states_join <- left_join(states, df, by = "abbrev_state")
@@ -63,13 +68,49 @@ my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
 
 # Missão
 
-### Column {width="75%"}
+## Column {width="75%"}
 
-#### Row {height="50%"}
+### Row {height="50%"}
+
+#### Column {height= "50%"}
+
+::: {.valuebox color="#FCBD27"}
+Faltam
+
+`r number(total - apo_n)`
+
+Válidos
+:::
+
+::: {.valuebox color="secondary" width="20%"}
+Apoiamentos válidos
+
+`r number(apo_n)`
+
+`r change(0, 0 ,when = paste0("Porcentagem (", apo_perc, "%)"), more = paste(day_inc, "novos"))`
+
+:::
+
+#### Column {.tabset}
+
+```{r}
+#| padding: 0px
+#| title: Absoluto
+ 
+fig2 <- ggplot() +
+  geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
+  scale_fill_gradient2(mid="#272727", high="#FCBD27") +
+  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos\n(log10)") +
+  theme_void()
+
+print(fig2)
+
+```
 
 ```{r}
 #| padding: 0px
 #| color: "white"
+#| title: Ajustado
 
 fig1 <- ggplot() +
   geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
@@ -84,20 +125,8 @@ print(fig1)
 
 ```{r}
 #| padding: 0px
-fig2 <- ggplot() +
-  geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
-  scale_fill_gradient2(mid="#272727", high="#FCBD27") +
-  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos\n(log10)") +
-  theme_void()
+#| title: Aptos
 
-print(fig2)
-
-```
-
-#### Row {height="50%"}
-
-```{r}
-#| padding: 0px
 fig3 <- ggplot() +
   geom_sf(data=states_join, aes(fill= ifelse(votos > EV01, "Sim", "Não")), color= "#272727", size=.15) +
   scale_fill_manual(values = c("#272727", "#FCBD27")) +
@@ -108,8 +137,37 @@ print(fig3)
 
 ```
 
+### Row {height="50%"}
+
+#### Column {width="50%"}
+
 ```{r}
 #| padding: 0px
+
+scientific_10 <- function(x) {
+  parse(text=gsub("e", " %*% 10^", scales::scientific_format()(x)))
+}
+
+all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
+    ggplot(aes(x = as.Date(DATE), y = votos)) +
+    geom_line() +
+    labs(title = "Apoiamentos ao longo do tempo (Em construção)",
+         x = "",
+         y = "Apoiamentos") +
+    scale_x_date(limits = as.Date(c("2023-11-03", "2025-11-03")), 
+                 date_breaks = "1 months", 
+                 date_labels = "%b %Y") +
+    scale_y_continuous(limits = c(0, 590000), expand = c(0, 0), labels = scientific_10) +
+    geom_hline(yintercept = total, linetype = "dashed", color = "red") +
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+#### Column {.tabset}
+
+```{r}
+#| padding: 0px
+#| title: Estado
 fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>%
   filter(prop != 0) %>%
   arrange(desc(abbrev_state)) %>%
@@ -129,7 +187,31 @@ print(fig5)
 
 ```
 
-### Column {width="25%"}
+```{r}
+#| padding: 0px
+#| title: Região
+fig6 <- tab %>% filter(abbrev_state != "Total") %>%
+  group_by(name_region) %>% summarise(votos = sum(votos)) %>%
+  mutate(prop = round(votos/sum(votos)*100,1)) %>%
+  filter(prop != 0) %>%
+  arrange(desc(name_region)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%
+  mutate(label = paste0(name_region,"\n",prop, "%")) %>%
+  ggplot(aes(x = "", y = prop, fill = name_region)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  scale_fill_manual(values = my_palette(4)) +
+  coord_polar("y", start = 0) +
+  ggrepel::geom_label_repel (aes(y = lab.ypos, segment.size = 0,
+                            label = label),
+                            color = "white", nudge_x = 0.7) +
+  theme_void() + labs(title = "   Participação por região no total") +
+  theme(legend.position="none")
+
+print(fig6)
+
+```
+
+## Column {width="25%"}
 
 ```{r}
 #| message: false
@@ -226,7 +308,7 @@ cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = 
 
 # Dados
 
-### Column {width="50%"}
+## Column {width="50%"}
 
 ```{r}
 all |>
@@ -238,7 +320,7 @@ all |>
     )
 ```
 
-### Column {width="50%"}
+## Column {width="50%"}
 
 ```{r}
 tse |>
