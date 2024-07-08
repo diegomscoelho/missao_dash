@@ -33,3 +33,7 @@ RUN Rscript -e "install.packages('httr')"
 RUN Rscript -e "install.packages('stringr')"
 RUN Rscript -e "remotes::install_version('sf', version = '1.0.16', repos = 'http://cran.us.r-project.org')"
 RUN Rscript -e "install.packages('cowplot')"
+RUN Rscript -e "install.packages('DT')"
+
+# Set working directory
+WORKDIR /workdir
