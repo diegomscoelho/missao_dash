@@ -39,7 +39,7 @@ all <- read.csv("data/mbl.csv", header = T)
 colnames(all) <- c("abbrev_state", "votos", "DATE")
 df <- all %>% filter(as.Date(DATE) == max(as.Date(DATE)))
 
-total <- 547403
+total <- 547043
 apo_n <- sum(df$votos)
 apo_perc <- round(100 * apo_n / total, 2)
 
