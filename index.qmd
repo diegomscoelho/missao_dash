@@ -177,10 +177,11 @@ all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
     scale_x_date(limits = as.Date(c("2023-11-03", "2025-11-03")), 
                  date_breaks = "1 months", 
                  date_labels = "%b %Y") +
-    scale_y_continuous(limits = c(0, 590000), expand = c(0, 0), labels = scientific_10) +
+    scale_y_continuous(limits = c(0, 730000), expand = c(0, 0), labels = scientific_10) +
     geom_hline(yintercept = total, linetype = "dashed", color = "red") +
     geom_vline(xintercept = doom_day, linetype = "dashed", color = "#FCBD27") +
     geom_text(mapping=aes(x=doom_day, y=0, label=paste0("Data prevista:\n", doom_day)), size=5, angle=0, vjust=-0.4, hjust=-0.1, color = "#FCBD27") +
+    geom_text(mapping=aes(y=total, x=as.Date(min(DATE)), label="Meta de apoiamentos"), size=5, angle=0, vjust=-0.4, hjust=--0.6, color = "red") +
     theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
