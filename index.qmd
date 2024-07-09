@@ -64,6 +64,20 @@ tab <- states_join %>% as.data.frame() %>% select(name_region, abbrev_state, vot
   mutate(EV01 = round(EV01, 0)) %>%
   rbind(., list("Total","Total", sum(.$votos), round(sum(states_join$VV05),0)))
 
+#########
+# MODEL #
+#########
+
+library(mgcv)
+
+model <- gam(votos ~ s(as.numeric(as.Date(DATE))), data = (all %>% group_by(DATE) %>% summarise(votos = sum(votos))))
+
+extended_dates <- seq.Date(as.Date(unique(df$DATE)), as.Date("2025-11-27"), by = "days")
+new_data <- data.frame(DATE = extended_dates)
+new_data$votos <- predict(model, newdata = new_data)
+
+doom_day <- new_data %>% filter(votos < total) %>% pull(DATE) %>% max()
+
 leg_size = 10
 
 my_palette <- colorRampPalette(c("#272727", "grey", "#FCBD27"))
@@ -154,15 +168,19 @@ scientific_10 <- function(x) {
 
 all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
     ggplot(aes(x = as.Date(DATE), y = votos)) +
-    geom_line() +
-    labs(title = "Apoiamentos ao longo do tempo (Em construção)",
+    geom_smooth(fullrange=TRUE, method = "gam", color = "#272727", linetype = "dashed") +
+    geom_line(size = 1.5, color = "#FCBD27") +
+    labs(title = "Apoiamentos ao longo do tempo",
          x = "",
-         y = "Apoiamentos") +
+         y = "Apoiamentos",
+         caption = "* Por favor, não leve essa previsão tão a sério.") +
     scale_x_date(limits = as.Date(c("2023-11-03", "2025-11-03")), 
                  date_breaks = "1 months", 
                  date_labels = "%b %Y") +
     scale_y_continuous(limits = c(0, 590000), expand = c(0, 0), labels = scientific_10) +
     geom_hline(yintercept = total, linetype = "dashed", color = "red") +
+    geom_vline(xintercept = doom_day, linetype = "dashed", color = "#FCBD27") +
+    geom_text(mapping=aes(x=doom_day, y=0, label=paste0("Data prevista:\n", doom_day)), size=5, angle=0, vjust=-0.4, hjust=-0.1, color = "#FCBD27") +
     theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
