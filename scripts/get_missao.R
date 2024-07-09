@@ -5,6 +5,7 @@
 old_data <- read.csv("./data/mbl.csv", header = T)
 
 # POST
+Sys.setenv(TZ='America/Sao_Paulo');
 library(httr)
 library(dplyr)
 library(stringr)
@@ -167,7 +168,6 @@ df <- old_data %>% filter(DATE != Sys.Date()) %>% rbind(., df)
 
 
 # Get the current day of the week
-Sys.setenv(TZ='America/Sao_Paulo');
 current_day <- weekdays(Sys.Date())
 
 # Define working days
