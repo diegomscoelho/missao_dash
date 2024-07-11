@@ -97,7 +97,7 @@ Faltam
 
 `r number(total - apo_n)`
 
-Válidos
+apoios válidos
 :::
 
 ::: {.valuebox color="secondary" width="20%"}
