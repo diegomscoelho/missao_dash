@@ -27,6 +27,7 @@ format:
 
 library(ggplot2)
 library(dplyr)
+library(bizdays)
 library(DT)
 
 source("R/formatting.R")
@@ -42,6 +43,8 @@ df <- all %>% filter(as.Date(DATE) == max(as.Date(DATE)))
 total <- 547043
 apo_n <- sum(df$votos)
 apo_perc <- round(100 * apo_n / total, 2)
+
+bizdays <- bizdays::bizseq(as.character(format(Sys.time(), '%Y-%m-%d')), '2025-11-27', "Brazil/ANBIMA") %>% length()
 
 day_inc <- apo_n - all %>% filter(as.Date(DATE) == sort(unique(as.Date(DATE)), decreasing = TRUE)[2]) %>%
   pull(votos) %>% sum()
@@ -97,7 +100,7 @@ Faltam
 
 `r number(total - apo_n)`
 
-apoios válidos
+apoios válidos e `r bizdays` dias úteis
 :::
 
 ::: {.valuebox color="secondary" width="20%"}
@@ -107,6 +110,7 @@ Apoiamentos válidos
 
 `r change(0, 0 ,when = paste0("Porcentagem (", apo_perc, "%)"), more = paste(day_inc, "novos"))`
 
+Meta do dia: `r round((total - apo_n + day_inc) / bizdays + 0.5, 0)` apoios
 :::
 
 #### Column {.tabset}
@@ -167,9 +171,11 @@ scientific_10 <- function(x) {
 }
 
 all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
+    # mutate(inc = c(0, diff(votos, differences = 1))) %>%
     ggplot(aes(x = as.Date(DATE), y = votos)) +
     geom_smooth(fullrange=TRUE, method = "gam", color = "#272727", linetype = "dashed") +
     geom_line(size = 1.5, color = "#FCBD27") +
+    # geom_col(aes(y= inc * 100), fill = "#FCBD27", alpha = 0.4) +
     labs(title = "Apoiamentos ao longo do tempo",
          x = "",
          y = "Apoiamentos",
@@ -177,7 +183,7 @@ all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
     scale_x_date(limits = as.Date(c("2023-11-03", "2025-11-03")), 
                  date_breaks = "1 months", 
                  date_labels = "%b %Y") +
-    scale_y_continuous(limits = c(0, 730000), expand = c(0, 0), labels = scientific_10) +
+    scale_y_continuous(limits = c(0, 730000), expand = c(0, 0), labels = scientific_10) + #, sec.axis = sec_axis(~.*1/100, name="Taxa de apoio diário")) +
     geom_hline(yintercept = total, linetype = "dashed", color = "red") +
     geom_vline(xintercept = doom_day, linetype = "dashed", color = "#FCBD27") +
     geom_text(mapping=aes(x=doom_day, y=0, label=paste0("Data prevista:\n", doom_day)), size=5, angle=0, vjust=-0.4, hjust=-0.1, color = "#FCBD27") +

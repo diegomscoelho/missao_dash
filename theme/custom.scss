@@ -4,3 +4,7 @@
 
 $navbar-bg: #272727;
 $navbar-fg: #F0F0F0;
+
+.quarto-dashboard .bslib-value-box .value-box-value {
+    font-size: clamp(.1em, 10cqw, 3em) !important;
+}
