@@ -2,13 +2,13 @@ name: Tweeter
 
 on:
   schedule:
-    - cron: '0 23 * * 1-5'    # Runs at 8 PM on weekdays
+    - cron: '0 21 * * 1-5'    # Runs at 8 PM on weekdays
   push:
     branches:
       - main
 
 jobs:
-  commit-date-time:
+  post-tweet-message:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && contains(github.event.head_commit.message, 'tweet:') || github.event_name == 'schedule'
 
@@ -23,9 +23,9 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git config --global pull.rebase true  # Set the default pull strategy to rebase
 
-    - name: Run update test
+    - name: Run post a tweet message 1
       run: |
-        echo "This runs 20h message to X"
+        echo "This runs 18h message to X"
 
         # Generate update to dash
         docker run -v ${{ github.workspace }}:/workdir \
