@@ -46,7 +46,10 @@ apo_perc <- round(100 * apo_n / total, 2)
 
 bizdays <- bizdays::bizseq(as.character(format(Sys.time(), '%Y-%m-%d')), '2025-06-30', "Brazil/ANBIMA") %>% length()
 
-day_inc <- apo_n - all %>% filter(as.Date(DATE) == sort(unique(as.Date(DATE)), decreasing = TRUE)[2]) %>%
+last_day <- all %>% filter(as.Date(DATE) == sort(unique(as.Date(DATE)), decreasing = TRUE)[2])
+day_diff = df$votos - last_day$votos
+
+day_inc <- apo_n - last_day %>%
   pull(votos) %>% sum()
 
 states <- sf::st_read("data/BR.shp", quiet = T)
@@ -359,4 +362,15 @@ tse |>
     extensions = "Buttons",
     options = list(dom = 'Bfrtip', paging = TRUE, buttons = c('csv', 'excel'))
     )
+```
+
+```{r}
+#| message: false
+#| warning: false
+
+write.table(paste0("🇧🇷 Apoios válidos: ", apo_n, " (", apo_perc, "%)",
+                   "\n🚀 Apoios do dia: ", day_inc, " novos (Parabéns! ", paste(df[as.logical(day_diff), 1], collapse = ", "), ")",
+                   "\n🙏 Faltam ", total - apo_n, " apoios válidos",
+                   "\n🔮 Previsão: ", doom_day, " (100% apoios validados)"),
+                   file="data/msg1.txt", quote=F, col.names=F, row.names=F)
 ```
