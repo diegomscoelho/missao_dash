@@ -2,7 +2,7 @@ name: Tweeter
 
 on:
   schedule:
-    - cron: '0 21 * * 1-5'    # Runs at 8 PM on weekdays
+    - cron: '0 23 * * 1-5'    # Runs at 8 PM on weekdays
   push:
     branches:
       - main
