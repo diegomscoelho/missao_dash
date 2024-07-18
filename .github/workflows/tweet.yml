@@ -1,0 +1,39 @@
+name: Tweeter
+
+on:
+  schedule:
+    - cron: '0 23 * * 1-5'    # Runs at 8 PM on weekdays
+  push:
+    branches:
+      - main
+
+jobs:
+  commit-date-time:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'tweet:') || github.event_name == 'schedule'
+
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --global pull.rebase true  # Set the default pull strategy to rebase
+
+    - name: Run update test
+      run: |
+        echo "This runs 20h message to X"
+
+        # Generate update to dash
+        docker run -v ${{ github.workspace }}:/workdir \
+          -e API_KEY="${{ secrets.X_API_KEY }}" \
+          -e API_SECRET_KEY="${{ secrets.X_API_SECRET_KEY }}" \
+          -e ACCESS_TOKEN="${{ secrets.X_ACCESS_TOKEN }}" \
+          -e ACCESS_TOKEN_SECRET="${{ secrets.X_ACCESS_TOKEN_SECRET }}" \
+          -e BEARER_TOKEN="${{ secrets.X_BEARER_TOKEN }}" \
+          diegomscoelho/tweepy \
+          python scripts/post_tweet.py data/msg1.txt index_files/figure-html/unnamed-chunk-9-1.png
+
