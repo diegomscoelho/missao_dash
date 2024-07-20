@@ -35,6 +35,7 @@ RUN Rscript -e "remotes::install_version('sf', version = '1.0.16', repos = 'http
 RUN Rscript -e "install.packages('cowplot')"
 RUN Rscript -e "install.packages('DT')"
 RUN Rscript -e "install.packages('bizdays')"
+RUN Rscript -e "install.packages('gt')"
 
 # Set working directory
 WORKDIR /workdir
