@@ -33,7 +33,7 @@ def main():
     elif args.paths:
         # Multiple images upload
         image_paths = args.paths.strip().split(',')
-        cl.album_upload(path=image_paths, caption=msg)
+        cl.album_upload(paths=image_paths, caption=msg)
     else:
         print("Error: You must provide either a path or paths argument.")
 
