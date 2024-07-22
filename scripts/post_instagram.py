@@ -32,14 +32,10 @@ def main():
         cl.photo_upload(path=args.path.strip(), caption=msg)
     elif args.paths:
         # Multiple images upload
-        image_paths = args.paths.split(',')
+        image_paths = args.paths.strip().split(',')
         cl.album_upload(path=image_paths, caption=msg)
     else:
         print("Error: You must provide either a path or paths argument.")
-
-    images = args.paths.strip().split(',')
-
-    cl.album_upload(images, msg, configure_exception=".png")
 
 
 if __name__ == "__main__":
