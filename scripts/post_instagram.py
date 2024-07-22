@@ -37,7 +37,7 @@ def main():
     else:
         print("Error: You must provide either a path or paths argument.")
 
-    images = args.paths.split(',')
+    images = args.paths.strip().split(',')
 
     cl.album_upload(images, msg, configure_exception=".png")
 
