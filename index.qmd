@@ -370,7 +370,7 @@ fig_table <- tab |>
     style = list(cell_fill(color = "#FCBD27"), cell_text(size = pct(110))),
     locations = cells_body(columns = everything(), rows = length(Estado))
   ) |>
-  tab_options(heading.background.color = "#272727", column_labels.background.color = "#FCBD27", data_row.padding = 1, data_row.padding.horizontal = 25, heading.align = "center")
+  tab_options(heading.background.color = "#272727", column_labels.background.color = "#FCBD27", data_row.padding = 1, data_row.padding.horizontal = 5)
 
 fig_table |> gtsave(filename = "fig/table.png", expand = 10)
 
@@ -409,4 +409,9 @@ write.table(paste0("🇧🇷 Apoios válidos: ", apo_n, " (", apo_perc, "%)",
                    "\n🙏 Faltam ", total - apo_n, " apoios válidos",
                    "\n🔮 Previsão: ", doom_day, " (100% apoios validados)"),
                    file="data/msg1.txt", quote=F, col.names=F, row.names=F)
+
+write.table(paste0("🇧🇷 Apoios válidos: ", apo_n, " (", apo_perc, "%)",
+                   "\n🚀 Apoios do dia: ", day_inc, " novos (Parabéns! ", paste(df[as.logical(day_diff), 1], collapse = ", "), ")",
+                   "\n🙏 Faltam ", total - apo_n, " apoios válidos"),
+                   file="data/msg2.txt", quote=F, col.names=F, row.names=F)
 ```
