@@ -31,4 +31,4 @@ jobs:
           diegomscoelho/instagrapi \
           python scripts/post_instagram.py \
             --path "fig/table.png" \
-            --msg "data/msg1.txt"
+            --msg "data/msg2.txt"
