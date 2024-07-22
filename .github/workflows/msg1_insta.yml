@@ -1,0 +1,41 @@
+name: Message Instagram 1
+
+on:
+  schedule:
+    - cron: '0 23 * * 1-5'    # Runs at 8 PM on weekdays
+  push:
+    branches:
+      - main
+
+jobs:
+  post-message1:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'insta1:') || github.event_name == 'schedule'
+
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --global pull.rebase true  # Set the default pull strategy to rebase
+
+    - name: Run post an instagram message 1
+      run: |
+        # Stupid renaming for instagrapi
+        cp index_files/figure-html/unnamed-chunk-2-1.png img1.jpg
+        cp index_files/figure-html/unnamed-chunk-3-1.png img2.jpg
+        cp index_files/figure-html/unnamed-chunk-4-1.png img3.jpg
+        cp index_files/figure-html/unnamed-chunk-6-1.png img4.jpg
+        cp index_files/figure-html/unnamed-chunk-7-1.png img5.jpg
+
+        docker run -v $(pwd):/workdir \
+          -e INSTA_LOGIN="${{ secrets.INSTA_LOGIN }}" \
+          -e INSTA_PASS="${{ secrets.INSTA_PASS }}" \
+          diegomscoelho/instagrapi \
+          python scripts/post_instagram.py \
+            --paths "img1.jpg,img2.jpg,img3.jpg,img4.jpg,img5.jpg" \
+            --msg "data/msg2.txt"
