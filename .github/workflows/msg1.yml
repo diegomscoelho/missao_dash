@@ -1,4 +1,4 @@
-name: Tweeter msg1
+name: Messages 1
 
 on:
   schedule:
@@ -8,9 +8,9 @@ on:
       - main
 
 jobs:
-  post-tweet-message:
+  post-message1:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'tweet:') || github.event_name == 'schedule'
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'msg1:') || github.event_name == 'schedule'
 
 
     steps:
@@ -25,7 +25,7 @@ jobs:
 
     - name: Run post a tweet message 1
       run: |
-        echo "This runs 18h message to X"
+        echo "This runs 20h message to X"
 
         # Generate update to dash
         docker run -v ${{ github.workspace }}:/workdir \
@@ -37,3 +37,19 @@ jobs:
           diegomscoelho/tweepy \
           python scripts/post_tweet.py data/msg1.txt index_files/figure-html/unnamed-chunk-9-1.png
 
+    - name: Run post an instagram message 1
+      run: |
+        # Stupid renaming for instagrapi
+        cp index_files/figure-html/unnamed-chunk-2-1.png img1.jpg
+        cp index_files/figure-html/unnamed-chunk-3-1.png img2.jpg
+        cp index_files/figure-html/unnamed-chunk-4-1.png img3.jpg
+        cp index_files/figure-html/unnamed-chunk-6-1.png img4.jpg
+        cp index_files/figure-html/unnamed-chunk-7-1.png img5.jpg
+
+        docker run -v $(pwd):/workdir \
+          -e INSTA_LOGIN="${{ secrets.INSTA_LOGIN }}" \
+          -e INSTA_PASS="${{ secrets.INSTA_PASS }}" \
+          diegomscoelho/instagrapi \
+          python scripts/post_instagram.py \
+            --paths "img1.jpg,img2.jpg,img3.jpg,img4.jpg,img5.jpg" \
+            --msg "data/msg2.txt"

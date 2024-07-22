@@ -122,14 +122,16 @@ Meta diária: `r round((total - apo_n + day_inc) / bizdays + 0.5, 0)` apoios at�
 #### Column {.tabset}
 
 ```{r}
-#| padding: 0px
+#| padding: 0
 #| title: Absoluto
+#| fig.width: 6
+#| fig.height: 6
  
 fig2 <- ggplot() +
   geom_sf(data=states_join, aes(fill=log10(votos + 1)), color= "#272727", size=.15) +
   scale_fill_gradient2(mid="#272727", high="#FCBD27") +
-  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos\n(log10)") +
-  theme_void()
+  labs(subtitle="           Apoiamentos por estado", size=leg_size, fill = "Apoiamentos  \n(log10)") +
+  theme_void() + theme(title = element_text(size = 16))
 
 print(fig2)
 
@@ -139,13 +141,15 @@ print(fig2)
 #| padding: 0px
 #| color: "white"
 #| title: Ajustado
+#| fig.width: 6
+#| fig.height: 6
 
 fig1 <- ggplot() +
   geom_sf(data=states_join, aes(fill=votos / EV * 1e+03), color= "#272727", size=.15) +
   scale_fill_gradient2(na.value="white", low="#272727", mid = "grey", high="#FCBD27", midpoint = 1) +
   labs(subtitle="           Apoiamentos por estado (A) / Apoiamentos mínimos (AM)",
-       size=leg_size, fill = "A/AM") +
-  theme_void()
+       size=leg_size, fill = "A/AM      ") +
+  theme_void() + theme(title = element_text(size = 14))
 
 print(fig1)
 
@@ -154,12 +158,14 @@ print(fig1)
 ```{r}
 #| padding: 0px
 #| title: Aptos
+#| fig.width: 6
+#| fig.height: 6
 
 fig3 <- ggplot() +
   geom_sf(data=states_join, aes(fill= ifelse(votos > EV01, "Sim", "Não")), color= "#272727", size=.15) +
   scale_fill_manual(values = c("#272727", "#FCBD27")) +
-  labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos") +
-  theme_void()
+  labs(subtitle = "           Estados aptos a ter diretório", size=8, fill = "Aptos        ") +
+  theme_void() + theme(title = element_text(size = 14))
 
 print(fig3)
 
@@ -203,6 +209,9 @@ all %>% group_by(DATE) %>% summarise(votos = sum(votos)) %>%
 ```{r}
 #| padding: 0px
 #| title: Estado
+#| fig.width: 6
+#| fig.height: 6
+
 fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/sum(votos)*100,1)) %>%
   filter(prop != 0) %>%
   arrange(desc(abbrev_state)) %>%
@@ -216,7 +225,7 @@ fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/su
                             label = label),
                             color = "white", nudge_x = 0.7) +
   theme_void() + labs(title = "   Participação por estado no total") +
-  theme(legend.position="none")
+  theme(legend.position="none", title = element_text(size = 14))
 
 print(fig5)
 
@@ -225,6 +234,9 @@ print(fig5)
 ```{r}
 #| padding: 0px
 #| title: Região
+#| fig.width: 6
+#| fig.height: 6
+
 fig6 <- tab %>% filter(abbrev_state != "Total") %>%
   group_by(name_region) %>% summarise(votos = sum(votos)) %>%
   mutate(prop = round(votos/sum(votos)*100,1)) %>%
@@ -240,7 +252,7 @@ fig6 <- tab %>% filter(abbrev_state != "Total") %>%
                             label = label),
                             color = "white", nudge_x = 0.7) +
   theme_void() + labs(title = "   Participação por região no total") +
-  theme(legend.position="none")
+  theme(legend.position="none", title = element_text(size = 14))
 
 print(fig6)
 
@@ -348,6 +360,8 @@ cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = 
 ```{r}
 #| message: false
 #| warning: false
+#| fig.width: 6
+#| fig.height: 6
 
 fig_table <- tab |>
   slice(1:nrow(tab)-1) %>% arrange(desc(votos/ EV01)) %>% rbind(., slice(tab, nrow(tab))) |>

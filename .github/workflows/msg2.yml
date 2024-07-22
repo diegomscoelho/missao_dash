@@ -1,0 +1,62 @@
+name: Messages 2
+
+on:
+  schedule:
+    - cron: '0 15 * * 1-5'    # Runs at 8 PM on weekdays
+  push:
+    branches:
+      - main
+
+jobs:
+  post-message2:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'msg2:') || github.event_name == 'schedule'
+
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --global pull.rebase true  # Set the default pull strategy to rebase
+
+    - name: Run post a tweet message 2
+      run: |
+        echo "This runs 18h message to X"
+
+        # Generate update to dash
+        docker run -v ${{ github.workspace }}:/workdir \
+          -e API_KEY="${{ secrets.X_API_KEY }}" \
+          -e API_SECRET_KEY="${{ secrets.X_API_SECRET_KEY }}" \
+          -e ACCESS_TOKEN="${{ secrets.X_ACCESS_TOKEN }}" \
+          -e ACCESS_TOKEN_SECRET="${{ secrets.X_ACCESS_TOKEN_SECRET }}" \
+          -e BEARER_TOKEN="${{ secrets.X_BEARER_TOKEN }}" \
+          diegomscoelho/tweepy \
+          python scripts/post_tweet.py data/msg2.txt fig/table.png
+
+    - name: Run post a tweet message 2
+      run: |
+        echo "This runs 12h message to X"
+
+        # Generate update to dash
+        docker run -v ${{ github.workspace }}:/workdir \
+          -e API_KEY="${{ secrets.X_API_KEY }}" \
+          -e API_SECRET_KEY="${{ secrets.X_API_SECRET_KEY }}" \
+          -e ACCESS_TOKEN="${{ secrets.X_ACCESS_TOKEN }}" \
+          -e ACCESS_TOKEN_SECRET="${{ secrets.X_ACCESS_TOKEN_SECRET }}" \
+          -e BEARER_TOKEN="${{ secrets.X_BEARER_TOKEN }}" \
+          diegomscoelho/tweepy \
+          python scripts/post_tweet.py data/msg2.txt fig/table.png
+
+    - name: Run post an instagram message 2
+      run: |
+        docker run -v $(pwd):/workdir \
+          -e INSTA_LOGIN="${{ secrets.INSTA_LOGIN }}" \
+          -e INSTA_PASS="${{ secrets.INSTA_PASS }}" \
+          diegomscoelho/instagrapi \
+          python scripts/post_instagram.py \
+            --path "fig/table.png" \
+            --msg "data/msg1.txt"
