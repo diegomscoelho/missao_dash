@@ -29,12 +29,13 @@ library(ggplot2)
 library(dplyr)
 library(bizdays)
 library(DT)
+library(gt)
 
 source("R/formatting.R")
 
 Sys.setenv(TZ='America/Sao_Paulo');
 
-data <- format(Sys.time(), '%d %B, %Y %H:%M')
+data <- format(Sys.time(), '%d-%m-%Y %H:%M')
 
 all <- read.csv("data/mbl.csv", header = T)
 colnames(all) <- c("abbrev_state", "votos", "DATE")
@@ -48,6 +49,8 @@ bizdays <- bizdays::bizseq(as.character(format(Sys.time(), '%Y-%m-%d')), '2025-0
 
 last_day <- all %>% filter(as.Date(DATE) == sort(unique(as.Date(DATE)), decreasing = TRUE)[2])
 day_diff = df$votos - last_day$votos
+
+df$diff <- day_diff
 
 day_inc <- apo_n - last_day %>%
   pull(votos) %>% sum()
@@ -66,9 +69,9 @@ states_join = list(df, tse, states)
 states_join <- left_join(states, df, by = "abbrev_state")
 states_join <- left_join(states_join, tse, by = "abbrev_state")
 
-tab <- states_join %>% as.data.frame() %>% select(name_region, abbrev_state, votos, EV01) %>%
+tab <- states_join %>% as.data.frame() %>% select(nam_stt, name_region, abbrev_state, votos, EV01, diff) %>%
   mutate(EV01 = round(EV01, 0)) %>%
-  rbind(., list("Total","Total", sum(.$votos), round(sum(states_join$VV05),0)))
+  rbind(., list("Total","Total", "Total", sum(.$votos), total, day_inc))
 
 #########
 # MODEL #
@@ -343,6 +346,41 @@ cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = 
 ## Column {width="50%"}
 
 ```{r}
+#| message: false
+#| warning: false
+
+fig_table <- tab |>
+  slice(1:nrow(tab)-1) %>% arrange(desc(votos/ EV01)) %>% rbind(., slice(tab, nrow(tab))) |>
+  mutate(prop = paste0(round(votos/sum(votos)*100*2,1), "%")) |>
+  mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 1, round(votos /EV01 * 1, 3)), rest = EV01 - votos) |>
+  mutate(rest = ifelse(rest <= 0, "-", rest)) %>%
+  select(Estado=nam_stt, `Apoios válidos` = votos, `Proporção Total` = prop, Mínimo=EV01, `% do mínimo` = perc, `Faltam` = rest, `Apoios do dia` = diff) |>
+  gt() |>
+  fmt_percent(`% do mínimo`, decimals = 1) |>
+  cols_merge_n_pct(
+    col_n = `Mínimo`,
+    col_pct = `% do mínimo`
+  ) |>
+  cols_label(`Mínimo` = "Mínimo (%)") |>
+  tab_header(
+    title = "Tabela de apoio ao Missão",
+    subtitle = paste("Atualização: ", data)
+  ) |>
+  tab_style(
+    style = list(cell_fill(color = "#FCBD27"), cell_text(size = pct(110))),
+    locations = cells_body(columns = everything(), rows = length(Estado))
+  ) |>
+  tab_options(heading.background.color = "#272727", column_labels.background.color = "#FCBD27", data_row.padding = 1, data_row.padding.horizontal = 25, heading.align = "center")
+
+fig_table |> gtsave(filename = "fig/table.png", expand = 10)
+
+fig_table
+
+```
+
+## Column {width="50%"}
+
+```{r}
 all |>
   arrange(desc(DATE)) |>
   datatable(
@@ -351,8 +389,6 @@ all |>
     options = list(dom = 'Bfrtip', paging = TRUE, buttons = c('csv', 'excel'))
     )
 ```
-
-## Column {width="50%"}
 
 ```{r}
 tse |>
