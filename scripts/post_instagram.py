@@ -26,7 +26,7 @@ def main():
     # Read the tweet message from the text file
     with open(msg_path, 'r') as file:
       msg = file.read().strip()
-      msg = "\n" + msg
+      msg = " \n" + msg
 
     if args.path:
         # Single image upload
