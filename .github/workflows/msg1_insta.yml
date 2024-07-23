@@ -37,6 +37,6 @@ jobs:
           -e INSTA_PASS="${{ secrets.INSTA_PASS }}" \
           diegomscoelho/instagrapi \
           python scripts/post_instagram.py \
-            --path "data/states.jpeg" \
+            --path "fig/states.jpeg" \
             --paths "img1.jpg,img2.jpg,img3.jpg,img4.jpg,img5.jpg" \
             --msg "data/msg1.txt"
