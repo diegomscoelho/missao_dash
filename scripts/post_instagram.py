@@ -31,13 +31,10 @@ def main():
     if args.path:
         # Single image upload
         cl.photo_upload(path=args.path.strip(), caption=msg)
-    elif args.paths:
+    if args.paths:
         # Multiple images upload
         image_paths = args.paths.strip().split(',')
         cl.album_upload(paths=image_paths, caption=msg)
-    else:
-        print("Error: You must provide either a path or paths argument.")
-
 
 if __name__ == "__main__":
     main()
