@@ -377,7 +377,6 @@ fig5 <- tab %>% filter(abbrev_state != "Total") %>% mutate(prop = round(votos/su
 
 cowplot::plot_grid(cowplot::plot_grid(fig2, fig3, fig1, fig5, ncol = 2, scale = c(1,1,1,0.85)), fig4, rel_widths = c(1,0.3))
 
-
 ```
 
 # Dados
