@@ -285,6 +285,33 @@ print(fig4)
 
 ```
 
+```{r}
+#| message: false
+#| warning: false
+
+msg <- paste0("** Última atualização: ", data, "     ")
+
+all_states <- tab %>% filter(abbrev_state != "Total") %>%
+  mutate(perc = ifelse(round(votos /EV01 * 100, 1) >= 100, 100, round(votos /EV01 * 100, 1))) %>%
+  mutate(label = paste0(perc, "%")) %>%
+  ggplot(aes(x = reorder(paste0("(",votos,") ",abbrev_state), votos/ EV01), y = perc, fill = ifelse(perc >= 100, "Sim", "Não"))) +
+  scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
+  geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
+  theme_classic() + coord_flip(ylim = c(0, 110)) +
+  labs(fill = "Aptos", x = "(Apoiamentos totais) Sigla do estado",
+  y = "Porcentagem (apoiamentos para meta)", title = "Apoiamentos mínimos por estado (%)",
+  caption = paste0("* Porcentagem máxima da figura <= 100%\n", msg)) +
+  geom_text(aes(label= ifelse(votos >= EV01, label, paste0(label, " (",EV01-votos,")"))),position = position_dodge2(0.9), hjust = -0.2, fontface=2, cex=2.5, show.legend = F) +
+  theme(title = element_text(size = 8),axis.title = element_text(size = 10),
+        legend.position = "inside", legend.position.inside = c(.85, .5),
+        plot.caption.position = "plot", plot.caption = element_text(hjust = 0.5))
+
+jpeg(filename = "fig/states.jpeg", width = 1080, height = 1080, res = 250)
+all_states
+garbage <- dev.off()
+
+```
+
 # Overview
 
 ```{r}
@@ -322,7 +349,7 @@ fig4 <- tab %>% filter(abbrev_state != "Total") %>%
   ggplot(aes(x = reorder(paste0("(",votos,") ",abbrev_state), votos/ EV01), y = perc, fill = ifelse(perc >= 100, "Sim", "Não"))) +
   scale_y_continuous(expand = expansion(mult = c(0, .1)), breaks = c(0, 25, 50, 75, 100)) +
   geom_col() + scale_fill_manual(values = c("#272727", "#FCBD27")) +
-  theme_classic() + coord_flip(ylim = c(0, 110)) +
+  theme_classic() + coord_flip(ylim = c(0, 120)) +
   labs(fill = "Aptos", x = "(Apoiamentos totais) Sigla do estado",
   y = "Porcentagem (apoiamentos para meta)", title = "Apoiamentos mínimos por estado (%)",
   caption = paste0("* Porcentagem máxima da figura <= 100%\n", msg)) +
