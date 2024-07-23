@@ -25,6 +25,9 @@ jobs:
 
     - name: Run post an instagram message 1
       uses: softprops/action-gh-release@v1
+      retry:
+        max-attempts: 3
+        delay: 5m
       with:
         args: |
           # Stupid renaming for instagrapi
@@ -42,6 +45,4 @@ jobs:
               --path "fig/states.jpeg" \
               --paths "img1.jpg,img2.jpg,img3.jpg,img4.jpg,img5.jpg" \
               --msg "data/msg1.txt"
-      retry:
-        max-attempts: 3
-        delay: 5m
+
