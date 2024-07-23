@@ -35,4 +35,4 @@ jobs:
           -e ACCESS_TOKEN_SECRET="${{ secrets.X_ACCESS_TOKEN_SECRET }}" \
           -e BEARER_TOKEN="${{ secrets.X_BEARER_TOKEN }}" \
           diegomscoelho/tweepy \
-          python scripts/post_tweet.py data/msg1.txt index_files/figure-html/unnamed-chunk-9-1.png
+          python scripts/post_tweet.py data/msg1.txt index_files/figure-html/unnamed-chunk-10-1.png
