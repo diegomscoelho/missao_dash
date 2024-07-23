@@ -2,7 +2,7 @@ name: Message X 1
 
 on:
   schedule:
-    - cron: '0 23 * * 1-5'    # Runs at 8 PM on weekdays
+    - cron: '15 23 * * 1-5'    # Runs at 8 PM on weekdays
   push:
     branches:
       - main
