@@ -40,7 +40,7 @@ jobs:
         echo "This runs every hour in working days from 10-20h"
         # Generate new input hourly
         docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo Rscript scripts/get_missao.R
-        # Generate update to dash
+        # Generate update to dash 
         docker run -v ${{ github.workspace }}:/workdir diegomscoelho/quarto_geo quarto render index.qmd
 
     - name: Make a commit
